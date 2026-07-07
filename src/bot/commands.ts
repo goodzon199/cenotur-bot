@@ -2,10 +2,9 @@ import { Telegraf, Context } from 'telegraf';
 import { searchFlights } from '../api/travelpayouts';
 import { searchHotels, HotelOffer } from '../api/hotels';
 import {
-  formatFlightsList,
+  formatFlightsWithCompare,
   formatHotelsList,
   formatSubscriptionInfo,
-  formatFlightCompareLinks,
   formatHotelCompareLinks,
 } from '../utils/formatters';
 import {
@@ -509,19 +508,13 @@ async function performFlightSearch(ctx: Context, session: { origin?: string; des
       return;
     }
 
-    const msg = formatFlightsList(
-      flights.slice(0, 5),
-      `${CITY_NAMES[session.origin] || session.origin} → ${CITY_NAMES[session.destination] || session.destination}`,
-    );
-
-    await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
-
-    const compareMsg = formatFlightCompareLinks({
+    const msg = formatFlightsWithCompare(flights, {
       origin: session.origin,
       destination: session.destination,
       departDate: session.departDate,
     });
-    await ctx.reply(compareMsg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
+
+    await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
 
     await ctx.reply(
       '💎 Переход по ссылкам помогает проекту 🙌',

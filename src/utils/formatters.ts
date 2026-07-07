@@ -1,6 +1,7 @@
 import { FlightOffer } from '../api/travelpayouts';
 import { HotelOffer } from '../api/hotels';
 import { tripComFlightUrl, oneTwoTripUrl, ostrovokUrl, tripComHotelUrl } from '../api/partners';
+import { config } from '../config';
 
 const AIRLINE_NAMES: Record<string, string> = {
   SU: 'Аэрофлот',
@@ -40,8 +41,32 @@ export function formatFlightsList(flights: FlightOffer[], title: string): string
   }
 
   const header = `🎯 *${title}*\n\n`;
-  const items = flights.map((f, i) => `*${i + 1}.* ${formatFlight(f)}`).join('\n\n---\n\n');
+  const items = flights.slice(0, 2).map((f, i) => `${i === 0 ? '🥇' : '🥈'} ${formatFlight(f)}`).join('\n\n');
   return header + items;
+}
+
+export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: {
+  origin: string; destination: string; departDate: string
+}): string {
+  if (flights.length === 0) {
+    return '😔 Билеты не найдены. Попробуйте изменить параметры поиска.';
+  }
+
+  const header = `🎯 *${compareParams.origin === 'MOW' ? 'Москва' : compareParams.origin} → ${compareParams.destination === 'LED' ? 'Санкт-Петербург' : compareParams.destination}*\n\n`;
+
+  const top = flights.slice(0, 2).map((f, i) => `${i === 0 ? '🥇' : '🥈'} ${formatFlight(f)}`).join('\n\n');
+
+  const aviaLink = `https://www.aviasales.ru/search/${compareParams.origin}${compareParams.departDate.replace(/-/g, '')}${compareParams.destination}1?marker=${config.travelpayouts.marker}`;
+  const tripLink = tripComFlightUrl(compareParams);
+  const ottLink = oneTwoTripUrl(compareParams);
+
+  const compare = [
+    '',
+    '📊 *Где ещё посмотреть:*',
+    `[✈️ Aviasales](${aviaLink}) · [🧳 OneTwoTrip](${ottLink}) · [🌍 Trip.com](${tripLink})`,
+  ].join('\n');
+
+  return header + top + compare;
 }
 
 export function formatHotel(hotel: HotelOffer): string {
