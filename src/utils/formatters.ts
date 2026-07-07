@@ -52,25 +52,44 @@ export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: 
 
   let msg = `🎯 *${originName} → ${destName}*\n📅 ${compareParams.departDate}\n\n`;
 
-  if (flights.length > 0) {
-    const best = flights[0];
-    const airline = best.airline;
-    const price = best.price.toLocaleString('ru-RU');
-    const changes = best.direct ? '✈️ Прямой' : '🔄 С пересадкой';
-    msg += `🥇 *Aviasales* — *${price} ₽*\n`;
-    msg += `🏢 ${airline} · ${changes}\n`;
-    msg += `[🔗 Посмотреть и купить](${best.link})\n\n`;
+  if (flights.length === 0) {
+    msg += '😔 Билеты не найдены. Попробуйте другие даты.';
+    return msg;
+  }
+
+  const best = flights[0];
+  const price1 = best.price.toLocaleString('ru-RU');
+  const ch1 = best.direct ? '✈️ Прямой' : '🔄 С пересадкой';
+  msg += `🥇 *Aviasales* — *${price1} ₽*\n`;
+  msg += `🏢 ${best.airline} · ${ch1}\n`;
+  msg += `[🔗 Купить билет](${best.link})\n\n`;
+
+  const gates: Record<string, FlightOffer> = {};
+  for (const f of flights) {
+    if (f.gate && !gates[f.gate] && f !== best) gates[f.gate] = f;
+  }
+
+  const gateKeys = Object.keys(gates);
+  if (gateKeys.length > 0) {
+    const second = gates[gateKeys[0]];
+    const p2 = second.price.toLocaleString('ru-RU');
+    const ch2 = second.direct ? '✈️ Прямой' : '🔄 С пересадкой';
+    msg += `🥈 *${second.gate}* — *${p2} ₽*\n`;
+    msg += `🏢 ${second.airline} · ${ch2}\n`;
+    msg += `[🔗 Купить билет](${second.link})\n\n`;
+  }
+
+  if (gateKeys.length > 1) {
+    const third = gates[gateKeys[1]];
+    const p3 = third.price.toLocaleString('ru-RU');
+    const ch3 = third.direct ? '✈️ Прямой' : '🔄 С пересадкой';
+    msg += `🥉 *${third.gate}* — *${p3} ₽*\n`;
+    msg += `🏢 ${third.airline} · ${ch3}\n`;
+    msg += `[🔗 Купить билет](${third.link})\n\n`;
   }
 
   const tripLink = tripComFlightUrl(compareParams);
-  msg += `🥈 *Trip.com*\n`;
-  msg += `[🔗 Искать на Trip.com](${tripLink})\n\n`;
-
-  const ottLink = oneTwoTripUrl(compareParams);
-  msg += `🥉 *OneTwoTrip*\n`;
-  msg += `[🔗 Искать на OneTwoTrip](${ottLink})\n\n`;
-
-  msg += '💎 Переход по ссылкам помогает проекту 🙌';
+  msg += `🌍 *Ещё варианты:* [Trip.com](${tripLink}) · [OneTwoTrip](${oneTwoTripUrl(compareParams)})`;
 
   return msg;
 }
