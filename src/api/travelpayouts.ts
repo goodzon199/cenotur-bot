@@ -105,7 +105,17 @@ export async function searchFlights(params: {
       return [];
     }
 
-    return response.data.data.map((p) => parseFlight(p, response.data.currency));
+    const filtered = response.data.data.filter((p) => {
+      const depMatch = p.departure_at && p.departure_at.slice(0, 10) === params.departDate;
+      if (params.returnDate && p.return_at) {
+        return depMatch && p.return_at.slice(0, 10) === params.returnDate;
+      }
+      return depMatch;
+    });
+
+    return filtered.length > 0
+      ? filtered.map((p) => parseFlight(p, response.data.currency))
+      : response.data.data.slice(0, 5).map((p) => parseFlight(p, response.data.currency));
   } catch (error) {
     console.error('Travelpayouts API error:', error);
     return [];
