@@ -1,6 +1,6 @@
 import { FlightOffer } from '../api/travelpayouts';
 import { HotelOffer } from '../api/hotels';
-import { tripComFlightUrl, oneTwoTripUrl, ostrovokUrl, tripComHotelUrl } from '../api/partners';
+import { aviasalesUrl, tripComFlightUrl, oneTwoTripUrl, ostrovokUrl, tripComHotelUrl } from '../api/partners';
 import { config } from '../config';
 
 const AIRLINE_NAMES: Record<string, string> = {
@@ -56,7 +56,7 @@ export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: 
 
   const top = flights.slice(0, 2).map((f, i) => `${i === 0 ? '🥇' : '🥈'} ${formatFlight(f)}`).join('\n\n');
 
-  const aviaLink = `https://www.aviasales.ru/search/${compareParams.origin}${compareParams.departDate.replace(/-/g, '')}${compareParams.destination}1?marker=${config.travelpayouts.marker}`;
+  const aviaLink = aviasalesUrl(compareParams);
   const tripLink = tripComFlightUrl(compareParams);
   const ottLink = oneTwoTripUrl(compareParams);
 

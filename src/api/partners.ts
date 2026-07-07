@@ -1,27 +1,38 @@
 import { config } from '../config';
 
-function m(marker: string): string {
+function toDDMMYY(isoDate: string): string {
+  const [y, m, d] = isoDate.split('-');
+  return `${d}${m}${y.slice(2)}`;
+}
+
+function m(): string {
   return config.travelpayouts.marker ? `marker=${config.travelpayouts.marker}` : '';
 }
 
-export function tripComFlightUrl(params: { origin: string; destination: string; departDate: string }): string {
-  const d = params.departDate.replace(/-/g, '');
-  const mk = m(config.travelpayouts.marker);
-  return `https://search.trip.com/flights/${params.origin}-to-${params.destination}?depart=${d}&${mk}`;
-}
-
-export function tripComHotelUrl(params: { city: string; checkIn: string; checkOut: string }): string {
-  const mk = m(config.travelpayouts.marker);
-  return `https://search.trip.com/hotels/${params.city}?checkin=${params.checkIn}&checkout=${params.checkOut}&${mk}`;
+export function aviasalesUrl(params: { origin: string; destination: string; departDate: string }): string {
+  const date = toDDMMYY(params.departDate);
+  const mk = m();
+  return `https://www.aviasales.ru/search/${params.origin}${date}${params.destination}1?${mk}`;
 }
 
 export function oneTwoTripUrl(params: { origin: string; destination: string; departDate: string }): string {
-  const d = params.departDate.replace(/-/g, '');
-  const mk = m(config.travelpayouts.marker);
-  return `https://www.onetwotrip.com/Flights?from=${params.origin}&to=${params.destination}&departureDate=${d}&${mk}`;
+  const date = toDDMMYY(params.departDate);
+  const mk = m();
+  return `https://www.onetwotrip.com/?${mk}&from=${params.origin}&to=${params.destination}&departureDate=${date}`;
+}
+
+export function tripComFlightUrl(params: { origin: string; destination: string; departDate: string }): string {
+  const date = toDDMMYY(params.departDate);
+  const mk = m();
+  return `https://search.trip.com/flights/${params.origin}-to-${params.destination}?depart=${date}&currency=RUB&${mk}`;
+}
+
+export function tripComHotelUrl(params: { city: string; checkIn: string; checkOut: string }): string {
+  const mk = m();
+  return `https://search.trip.com/hotels/${params.city}?checkin=${params.checkIn}&checkout=${params.checkOut}&currency=RUB&${mk}`;
 }
 
 export function ostrovokUrl(params: { city: string; checkIn: string; checkOut: string }): string {
-  const mk = m(config.travelpayouts.marker);
+  const mk = m();
   return `https://ostrovok.ru/search/${params.city}/?checkIn=${params.checkIn}&checkOut=${params.checkOut}&${mk}`;
 }
