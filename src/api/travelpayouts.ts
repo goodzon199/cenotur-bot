@@ -56,6 +56,9 @@ export function buildAffiliateLink(params: {
 
 function parseFlight(p: FlightRaw, currency: string): FlightOffer {
   const departDate = p.departure_at.slice(0, 10);
+  const searchUrl = p.link.startsWith('http') ? p.link : `https://www.aviasales.ru${p.link}`;
+  const marker = config.travelpayouts.marker;
+  const link = marker ? `${searchUrl}${p.link.includes('?') ? '&' : '?'}marker=${marker}` : searchUrl;
   return {
     origin: p.origin,
     destination: p.destination,
@@ -66,7 +69,7 @@ function parseFlight(p: FlightRaw, currency: string): FlightOffer {
     currency,
     airline: p.airline,
     flightNumber: p.flight_number,
-    link: buildAffiliateLink({ origin: p.origin, destination: p.destination, departDate }),
+    link,
     direct: p.transfers === 0,
     gate: p.gate,
   };
