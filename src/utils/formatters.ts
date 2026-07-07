@@ -49,8 +49,12 @@ export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: 
 }): string {
   const originName = compareParams.origin === 'MOW' ? 'Москва' : compareParams.origin;
   const destName = compareParams.destination === 'LED' ? 'Санкт-Петербург' : compareParams.destination;
+  const dates = compareParams.returnDate
+    ? `${compareParams.departDate} — ${compareParams.returnDate}`
+    : compareParams.departDate;
+  const note = '\n_Цены приблизительные. Для точных дат нажмите "Купить билет"_';
 
-  let msg = `🎯 *${originName} → ${destName}*\n\n`;
+  let msg = `🎯 *${originName} → ${destName}*\n📅 ${dates}${note}\n\n`;
 
   if (flights.length === 0) {
     msg += '😔 Билеты не найдены. Попробуйте другие даты.';
@@ -58,11 +62,9 @@ export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: 
   }
 
   function flightLine(f: FlightOffer, label: string): string {
-    const dates = f.returnDate ? `📅 ${f.departDate} — ${f.returnDate}` : `📅 ${f.departDate}`;
     const price = f.price.toLocaleString('ru-RU');
     const ch = f.direct ? '✈️ Прямой' : '🔄 С пересадкой';
-    const g = f.gate ? ` · 🛒 ${f.gate}` : '';
-    return `${label} *Aviasales* — *${price} ₽*\n${dates}\n🏢 ${f.airline}${g} · ${ch}\n[🔗 Купить билет](${f.link})`;
+    return `${label} *${f.gate || 'Aviasales'}* — *${price} ₽*\n🏢 ${f.airline} · ${ch}\n[🔗 Купить билет](${f.link})`;
   }
 
   msg += flightLine(flights[0], '🥇') + '\n\n';
@@ -74,10 +76,10 @@ export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: 
 
   const gateKeys = Object.keys(gates);
   if (gateKeys.length > 0) {
-    msg += flightLine(gates[gateKeys[0]], '🥈').replace('*Aviasales*', `*${gates[gateKeys[0]].gate}*`) + '\n\n';
+    msg += flightLine(gates[gateKeys[0]], '🥈') + '\n\n';
   }
   if (gateKeys.length > 1) {
-    msg += flightLine(gates[gateKeys[1]], '🥉').replace('*Aviasales*', `*${gates[gateKeys[1]].gate}*`) + '\n\n';
+    msg += flightLine(gates[gateKeys[1]], '🥉') + '\n\n';
   }
 
   const tripLink = tripComFlightUrl(compareParams);
