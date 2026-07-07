@@ -45,12 +45,15 @@ export function formatFlightsList(flights: FlightOffer[], title: string): string
 }
 
 export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: {
-  origin: string; destination: string; departDate: string
+  origin: string; destination: string; departDate: string; returnDate?: string
 }): string {
   const originName = compareParams.origin === 'MOW' ? 'Москва' : compareParams.origin;
   const destName = compareParams.destination === 'LED' ? 'Санкт-Петербург' : compareParams.destination;
+  const dates = compareParams.returnDate
+    ? `📅 ${compareParams.departDate} — ${compareParams.returnDate}`
+    : `📅 ${compareParams.departDate}`;
 
-  let msg = `🎯 *${originName} → ${destName}*\n📅 ${compareParams.departDate}\n\n`;
+  let msg = `🎯 *${originName} → ${destName}*\n${dates}\n\n`;
 
   if (flights.length === 0) {
     msg += '😔 Билеты не найдены. Попробуйте другие даты.';

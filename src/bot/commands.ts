@@ -512,6 +512,7 @@ async function performFlightSearch(ctx: Context, session: { origin?: string; des
       origin: session.origin,
       destination: session.destination,
       departDate: session.departDate,
+      returnDate: session.returnDate,
     });
 
     await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, ...searchAgainKeyboard() });

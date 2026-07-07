@@ -9,22 +9,32 @@ function m(): string {
   return config.travelpayouts.marker ? `marker=${config.travelpayouts.marker}` : '';
 }
 
-export function aviasalesUrl(params: { origin: string; destination: string; departDate: string }): string {
-  const date = toDDMMYY(params.departDate);
-  const mk = m();
-  return `https://www.aviasales.ru/search/${params.origin}${date}${params.destination}1?${mk}`;
+export interface SearchParams {
+  origin: string;
+  destination: string;
+  departDate: string;
+  returnDate?: string;
 }
 
-export function oneTwoTripUrl(params: { origin: string; destination: string; departDate: string }): string {
-  const date = toDDMMYY(params.departDate);
+export function aviasalesUrl(params: SearchParams): string {
+  const out = toDDMMYY(params.departDate);
+  const ret = params.returnDate ? `/${toDDMMYY(params.returnDate)}` : '';
   const mk = m();
-  return `https://www.onetwotrip.com/?${mk}&from=${params.origin}&to=${params.destination}&departureDate=${date}`;
+  return `https://www.aviasales.ru/search/${params.origin}${out}${params.destination}1${ret}?${mk}`;
 }
 
-export function tripComFlightUrl(params: { origin: string; destination: string; departDate: string }): string {
-  const date = toDDMMYY(params.departDate);
+export function oneTwoTripUrl(params: SearchParams): string {
+  const out = toDDMMYY(params.departDate);
+  const ret = params.returnDate ? `&returnDate=${toDDMMYY(params.returnDate)}` : '';
   const mk = m();
-  return `https://search.trip.com/flights/${params.origin}-to-${params.destination}?depart=${date}&currency=RUB&${mk}`;
+  return `https://www.onetwotrip.com/?${mk}&from=${params.origin}&to=${params.destination}&departureDate=${out}${ret}`;
+}
+
+export function tripComFlightUrl(params: SearchParams): string {
+  const out = toDDMMYY(params.departDate);
+  const ret = params.returnDate ? `&return=${toDDMMYY(params.returnDate)}` : '';
+  const mk = m();
+  return `https://search.trip.com/flights/${params.origin}-to-${params.destination}?depart=${out}${ret}&currency=RUB&${mk}`;
 }
 
 export function tripComHotelUrl(params: { city: string; checkIn: string; checkOut: string }): string {
