@@ -70,9 +70,22 @@ if (config.travelpayouts.apiToken) {
   console.log('No TRAVELPAYOUTS_API_TOKEN set — monitoring disabled');
 }
 
-bot.launch().then(() => {
-  console.log('TravelBot is running!');
-});
+async function startBot(retries = 10) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await bot.launch();
+      console.log('TravelBot is running!');
+      return;
+    } catch (err) {
+      const wait = Math.min(30, 2 ** i) * 1000;
+      console.log(`Connection attempt ${i + 1}/${retries} failed, retrying in ${wait / 1000}s...`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+  console.error('Failed to start bot after all retries');
+}
+
+startBot();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
