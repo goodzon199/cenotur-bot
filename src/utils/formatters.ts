@@ -49,46 +49,35 @@ export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: 
 }): string {
   const originName = compareParams.origin === 'MOW' ? 'Москва' : compareParams.origin;
   const destName = compareParams.destination === 'LED' ? 'Санкт-Петербург' : compareParams.destination;
-  const dates = compareParams.returnDate
-    ? `📅 ${compareParams.departDate} — ${compareParams.returnDate}`
-    : `📅 ${compareParams.departDate}`;
 
-  let msg = `🎯 *${originName} → ${destName}*\n${dates}\n\n`;
+  let msg = `🎯 *${originName} → ${destName}*\n\n`;
 
   if (flights.length === 0) {
     msg += '😔 Билеты не найдены. Попробуйте другие даты.';
     return msg;
   }
 
-  const best = flights[0];
-  const price1 = best.price.toLocaleString('ru-RU');
-  const ch1 = best.direct ? '✈️ Прямой' : '🔄 С пересадкой';
-  msg += `🥇 *Aviasales* — *${price1} ₽*\n`;
-  msg += `🏢 ${best.airline} · ${ch1}\n`;
-  msg += `[🔗 Купить билет](${best.link})\n\n`;
+  function flightLine(f: FlightOffer, label: string): string {
+    const dates = f.returnDate ? `📅 ${f.departDate} — ${f.returnDate}` : `📅 ${f.departDate}`;
+    const price = f.price.toLocaleString('ru-RU');
+    const ch = f.direct ? '✈️ Прямой' : '🔄 С пересадкой';
+    const g = f.gate ? ` · 🛒 ${f.gate}` : '';
+    return `${label} *Aviasales* — *${price} ₽*\n${dates}\n🏢 ${f.airline}${g} · ${ch}\n[🔗 Купить билет](${f.link})`;
+  }
+
+  msg += flightLine(flights[0], '🥇') + '\n\n';
 
   const gates: Record<string, FlightOffer> = {};
   for (const f of flights) {
-    if (f.gate && !gates[f.gate] && f !== best) gates[f.gate] = f;
+    if (f.gate && !gates[f.gate] && f !== flights[0]) gates[f.gate] = f;
   }
 
   const gateKeys = Object.keys(gates);
   if (gateKeys.length > 0) {
-    const second = gates[gateKeys[0]];
-    const p2 = second.price.toLocaleString('ru-RU');
-    const ch2 = second.direct ? '✈️ Прямой' : '🔄 С пересадкой';
-    msg += `🥈 *${second.gate}* — *${p2} ₽*\n`;
-    msg += `🏢 ${second.airline} · ${ch2}\n`;
-    msg += `[🔗 Купить билет](${second.link})\n\n`;
+    msg += flightLine(gates[gateKeys[0]], '🥈').replace('*Aviasales*', `*${gates[gateKeys[0]].gate}*`) + '\n\n';
   }
-
   if (gateKeys.length > 1) {
-    const third = gates[gateKeys[1]];
-    const p3 = third.price.toLocaleString('ru-RU');
-    const ch3 = third.direct ? '✈️ Прямой' : '🔄 С пересадкой';
-    msg += `🥉 *${third.gate}* — *${p3} ₽*\n`;
-    msg += `🏢 ${third.airline} · ${ch3}\n`;
-    msg += `[🔗 Купить билет](${third.link})\n\n`;
+    msg += flightLine(gates[gateKeys[1]], '🥉').replace('*Aviasales*', `*${gates[gateKeys[1]].gate}*`) + '\n\n';
   }
 
   const tripLink = tripComFlightUrl(compareParams);

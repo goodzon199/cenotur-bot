@@ -25,6 +25,7 @@ interface FlightRaw {
   origin_airport: string;
   destination_airport: string;
   departure_at: string;
+  return_at?: string;
   airline: string;
   destination: string;
   origin: string;
@@ -56,6 +57,7 @@ export function buildAffiliateLink(params: {
 
 function parseFlight(p: FlightRaw, currency: string): FlightOffer {
   const departDate = p.departure_at.slice(0, 10);
+  const returnDate = p.return_at ? p.return_at.slice(0, 10) : undefined;
   const searchUrl = p.link.startsWith('http') ? p.link : `https://www.aviasales.ru${p.link}`;
   const marker = config.travelpayouts.marker;
   const link = marker ? `${searchUrl}${p.link.includes('?') ? '&' : '?'}marker=${marker}` : searchUrl;
@@ -65,6 +67,7 @@ function parseFlight(p: FlightRaw, currency: string): FlightOffer {
     originName: p.origin_airport,
     destinationName: p.destination_airport,
     departDate,
+    returnDate,
     price: p.price,
     currency,
     airline: p.airline,
