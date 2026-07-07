@@ -14,87 +14,76 @@ import {
   removeSubscription,
   UserSubscription,
 } from '../database';
-import { mainKeyboard, searchAgainKeyboard, confirmSubscriptionKeyboard } from './keyboards';
+import { mainKeyboard, searchAgainKeyboard, confirmSubscriptionKeyboard, popularDestinationsKeyboard } from './keyboards';
 
 const CITY_CODES: Record<string, string> = {
-  москва: 'MOW',
-  'санкт-петербург': 'LED',
-  спб: 'LED',
-  сочи: 'AER',
-  екатеринбург: 'SVX',
-  новосибирск: 'OVB',
-  казань: 'KZN',
-  'нижний новгород': 'GOJ',
-  самара: 'KUF',
-  ростов: 'ROV',
-  уфа: 'UFA',
-  красноярск: 'KJA',
-  пермь: 'PEE',
-  воронеж: 'VOZ',
-  волгоград: 'VOG',
-  минск: 'MSQ',
-  'алма-ата': 'ALA',
-  алматы: 'ALA',
-  нурсултан: 'NQZ',
-  астана: 'NQZ',
-  ташкент: 'TAS',
-  бишкек: 'FRU',
-  баку: 'GYD',
-  тбилиси: 'TBS',
-  ереван: 'EVN',
-  стамбул: 'IST',
-  анталья: 'AYT',
-  дубай: 'DXB',
-  лондон: 'LON',
-  париж: 'PAR',
-  берлин: 'BER',
-  прага: 'PRG',
-  барселона: 'BCN',
-  милан: 'MIL',
-  рим: 'ROM',
-  бангкок: 'BKK',
-  пхукет: 'HKT',
-  'гоа': 'GOI',
-  паттайя: 'PYY',
+  москва: 'MOW', 'санкт-петербург': 'LED', спб: 'LED', сочи: 'AER',
+  екатеринбург: 'SVX', новосибирск: 'OVB', казань: 'KZN',
+  'нижний новгород': 'GOJ', самара: 'KUF', ростов: 'ROV',
+  уфа: 'UFA', красноярск: 'KJA', пермь: 'PEE', воронеж: 'VOZ',
+  волгоград: 'VOG', челябинск: 'CEK', омск: 'OMS',
+  саратов: 'RTW', тула: 'TYA', краснодар: 'KRR',
+  иркутск: 'IKT', хабаровск: 'KHV', владивосток: 'VVO',
+  тюмень: 'TJM', астрахань: 'ASF', калининград: 'KGD',
+  'химки': 'SVO', 'шеннон': 'SNN',
+  'великий новгород': 'NVR', псков: 'PKV',
+  мурманск: 'MMK', архангельск: 'ARH',
+  ярославль: 'IAR', ижевск: 'IJK',
+  томск: 'TOF', кемерово: 'KEJ',
+  'набережные челны': 'NBC', ставрополь: 'STW',
+  магадан: 'GDX', южносахалинск: 'UUS',
+  минск: 'MSQ', гомель: 'GME',
+  'алма-ата': 'ALA', алматы: 'ALA',
+  нурсултан: 'NQZ', астана: 'NQZ',
+  ташкент: 'TAS', бишкек: 'FRU',
+  баку: 'GYD', тбилиси: 'TBS', ереван: 'EVN',
+  стамбул: 'IST', анталья: 'AYT',
+  дубай: 'DXB', абудаби: 'AUH',
+  лондон: 'LON', париж: 'PAR', берлин: 'BER',
+  прага: 'PRG', барселона: 'BCN',
+  милан: 'MIL', рим: 'ROM', венеция: 'VCE',
+  никосия: 'ECN', ларнака: 'LCA',
+  бангкок: 'BKK', пхукет: 'HKT',
+  'гоа': 'GOI', паттайя: 'PYY',
+  'оаэ': 'DXB', 'отель': 'DXB',
+  тайланд: 'BKK', вьетнам: 'SGN',
+  'нью-йорк': 'NYC', 'лос-анджелес': 'LAX',
+  майами: 'MIA', чикаго: 'CHI',
+  дели: 'DEL', гонконг: 'HKG',
+  сингапур: 'SIN', токио: 'TYO',
+  пекин: 'BJS', 'шанхай': 'SHA',
+  'телль-авив': 'TLV', 'иерусалим': 'JRS',
+  доха: 'DOH', манама: 'BAH',
+  мале: 'MLE', 'шри-ланка': 'CMB',
+  батуми: 'BUS', кутаиси: 'KUT',
+  белград: 'BEG', загреб: 'ZAG',
+  варшава: 'WAW', будапешт: 'BUD',
+  вена: 'VIE', 'царицыно': 'VOG',
 };
 
 const CITY_NAMES: Record<string, string> = {
-  MOW: 'Москва',
-  LED: 'Санкт-Петербург',
-  AER: 'Сочи',
-  SVX: 'Екатеринбург',
-  OVB: 'Новосибирск',
-  KZN: 'Казань',
-  GOJ: 'Нижний Новгород',
-  KUF: 'Самара',
-  ROV: 'Ростов-на-Дону',
-  UFA: 'Уфа',
-  KJA: 'Красноярск',
-  PEE: 'Пермь',
-  VOZ: 'Воронеж',
-  VOG: 'Волгоград',
-  MSQ: 'Минск',
-  ALA: 'Алматы',
-  NQZ: 'Астана',
-  TAS: 'Ташкент',
-  FRU: 'Бишкек',
-  GYD: 'Баку',
-  TBS: 'Тбилиси',
-  EVN: 'Ереван',
-  IST: 'Стамбул',
-  AYT: 'Анталья',
-  DXB: 'Дубай',
-  LON: 'Лондон',
-  PAR: 'Париж',
-  BER: 'Берлин',
-  PRG: 'Прага',
-  BCN: 'Барселона',
-  MIL: 'Милан',
-  ROM: 'Рим',
-  BKK: 'Бангкок',
-  HKT: 'Пхукет',
-  GOI: 'Гоа',
-  PYY: 'Паттайя',
+  MOW: 'Москва', LED: 'Санкт-Петербург', AER: 'Сочи',
+  SVX: 'Екатеринбург', OVB: 'Новосибирск', KZN: 'Казань',
+  GOJ: 'Нижний Новгород', KUF: 'Самара', ROV: 'Ростов-на-Дону',
+  UFA: 'Уфа', KJA: 'Красноярск', PEE: 'Пермь', VOZ: 'Воронеж',
+  VOG: 'Волгоград', CEK: 'Челябинск', OMS: 'Омск', KRR: 'Краснодар',
+  IKT: 'Иркутск', KHV: 'Хабаровск', VVO: 'Владивосток',
+  TJM: 'Тюмень', KGD: 'Калининград', MMK: 'Мурманск',
+  MSQ: 'Минск', ALA: 'Алматы', NQZ: 'Астана',
+  TAS: 'Ташкент', FRU: 'Бишкек', GYD: 'Баку',
+  TBS: 'Тбилиси', EVN: 'Ереван', BUS: 'Батуми',
+  IST: 'Стамбул', AYT: 'Анталья',
+  DXB: 'Дубай', AUH: 'Абу-Даби',
+  LON: 'Лондон', PAR: 'Париж', BER: 'Берлин',
+  PRG: 'Прага', BCN: 'Барселона', MIL: 'Милан',
+  ROM: 'Рим', VCE: 'Венеция', BEG: 'Белград',
+  WAW: 'Варшава', BUD: 'Будапешт', VIE: 'Вена',
+  BKK: 'Бангкок', HKT: 'Пхукет', GOI: 'Гоа',
+  NYC: 'Нью-Йорк', LAX: 'Лос-Анджелес', MIA: 'Майами',
+  DEL: 'Дели', HKG: 'Гонконг', SIN: 'Сингапур',
+  TYO: 'Токио', BJS: 'Пекин',
+  TLV: 'Тель-Авив', DOH: 'Доха',
+  MLE: 'Мале', CMB: 'Коломбо',
 };
 
 function resolveCity(input: string): string | null {
@@ -217,6 +206,13 @@ export function setupBot(bot: Telegraf) {
   bot.hears(/^\/?cancel$/i, async (ctx) => {
     userSessions.delete(ctx.chat.id);
     await ctx.reply('❌ Отменено.', mainKeyboard);
+  });
+
+  bot.hears('🔥 Популярные направления', async (ctx) => {
+    await ctx.reply('Выберите популярное направление:', {
+      parse_mode: 'Markdown',
+      ...popularDestinationsKeyboard(),
+    });
   });
 
   bot.on('text', async (ctx) => {
@@ -393,6 +389,37 @@ export function setupBot(bot: Telegraf) {
     if (ctx.chat.type === 'private') return ctx.chat.id;
     return undefined;
   }
+
+  const POPULAR: Record<string, { origin: string; dest: string }> = {
+    pop_MOW_LED: { origin: 'MOW', dest: 'LED' },
+    pop_MOW_AER: { origin: 'MOW', dest: 'AER' },
+    pop_MOW_IST: { origin: 'MOW', dest: 'IST' },
+    pop_MOW_DXB: { origin: 'MOW', dest: 'DXB' },
+    pop_LED_MOW: { origin: 'LED', dest: 'MOW' },
+    pop_MOW_AYT: { origin: 'MOW', dest: 'AYT' },
+    pop_MOW_EVN: { origin: 'MOW', dest: 'EVN' },
+    pop_MOW_GYD: { origin: 'MOW', dest: 'GYD' },
+    pop_MOW_TAS: { origin: 'MOW', dest: 'TAS' },
+    pop_MOW_SVX: { origin: 'MOW', dest: 'SVX' },
+  };
+
+  bot.action(/pop_/, async (ctx) => {
+    const cid = chatId(ctx);
+    if (!cid) return;
+    const route = POPULAR[ctx.match[0]];
+    if (!route) return;
+    userSessions.set(cid, {
+      step: 'awaiting_depart_date',
+      origin: route.origin,
+      destination: route.dest,
+    });
+    const from = CITY_NAMES[route.origin] || route.origin;
+    const to = CITY_NAMES[route.dest] || route.dest;
+    await ctx.editMessageText(
+      `✈️ *${from} → ${to}*\n\n📅 Введите дату *отправления* (ДД.ММ.ГГГГ):`,
+      { parse_mode: 'Markdown' },
+    );
+  });
 
   bot.action('sub_confirm', async (ctx) => {
     const cid = chatId(ctx);

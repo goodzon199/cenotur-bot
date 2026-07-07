@@ -21,11 +21,12 @@ export function formatFlight(flight: FlightOffer): string {
   const airline = AIRLINE_NAMES[flight.airline] || flight.airline;
   const changes = flight.direct ? '✈️ Прямой' : '🔄 С пересадкой';
   const price = flight.price.toLocaleString('ru-RU');
+  const gate = flight.gate ? ` 🛒 ${flight.gate}` : '';
 
   return [
     `✈️ *${flight.originName} → ${flight.destinationName}*`,
     `🗓 ${flight.departDate}${flight.returnDate ? ` — ${flight.returnDate}` : ''}`,
-    `💵 *${price} ${flight.currency.toUpperCase()}*`,
+    `💵 *${price} ${flight.currency.toUpperCase()}*${gate}`,
     `🏢 ${airline} (рейс ${flight.flightNumber})`,
     `📌 ${changes}`,
     ``,
