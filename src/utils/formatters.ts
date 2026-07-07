@@ -1,7 +1,6 @@
 import { FlightOffer } from '../api/travelpayouts';
 import { HotelOffer } from '../api/hotels';
-import { aviasalesUrl, tripComFlightUrl, oneTwoTripUrl, ostrovokUrl, tripComHotelUrl } from '../api/partners';
-import { config } from '../config';
+import { tripComFlightUrl, oneTwoTripUrl, ostrovokUrl, tripComHotelUrl } from '../api/partners';
 
 const AIRLINE_NAMES: Record<string, string> = {
   SU: 'Аэрофлот',
@@ -48,25 +47,32 @@ export function formatFlightsList(flights: FlightOffer[], title: string): string
 export function formatFlightsWithCompare(flights: FlightOffer[], compareParams: {
   origin: string; destination: string; departDate: string
 }): string {
-  if (flights.length === 0) {
-    return '😔 Билеты не найдены. Попробуйте изменить параметры поиска.';
+  const originName = compareParams.origin === 'MOW' ? 'Москва' : compareParams.origin;
+  const destName = compareParams.destination === 'LED' ? 'Санкт-Петербург' : compareParams.destination;
+
+  let msg = `🎯 *${originName} → ${destName}*\n📅 ${compareParams.departDate}\n\n`;
+
+  if (flights.length > 0) {
+    const best = flights[0];
+    const airline = best.airline;
+    const price = best.price.toLocaleString('ru-RU');
+    const changes = best.direct ? '✈️ Прямой' : '🔄 С пересадкой';
+    msg += `🥇 *Aviasales* — *${price} ₽*\n`;
+    msg += `🏢 ${airline} · ${changes}\n`;
+    msg += `[🔗 Посмотреть и купить](${best.link})\n\n`;
   }
 
-  const header = `🎯 *${compareParams.origin === 'MOW' ? 'Москва' : compareParams.origin} → ${compareParams.destination === 'LED' ? 'Санкт-Петербург' : compareParams.destination}*\n\n`;
-
-  const top = flights.slice(0, 2).map((f, i) => `${i === 0 ? '🥇' : '🥈'} ${formatFlight(f)}`).join('\n\n');
-
-  const aviaLink = aviasalesUrl(compareParams);
   const tripLink = tripComFlightUrl(compareParams);
+  msg += `🥈 *Trip.com*\n`;
+  msg += `[🔗 Искать на Trip.com](${tripLink})\n\n`;
+
   const ottLink = oneTwoTripUrl(compareParams);
+  msg += `🥉 *OneTwoTrip*\n`;
+  msg += `[🔗 Искать на OneTwoTrip](${ottLink})\n\n`;
 
-  const compare = [
-    '',
-    '📊 *Где ещё посмотреть:*',
-    `[✈️ Aviasales](${aviaLink}) · [🧳 OneTwoTrip](${ottLink}) · [🌍 Trip.com](${tripLink})`,
-  ].join('\n');
+  msg += '💎 Переход по ссылкам помогает проекту 🙌';
 
-  return header + top + compare;
+  return msg;
 }
 
 export function formatHotel(hotel: HotelOffer): string {

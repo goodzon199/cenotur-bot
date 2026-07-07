@@ -514,12 +514,7 @@ async function performFlightSearch(ctx: Context, session: { origin?: string; des
       departDate: session.departDate,
     });
 
-    await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
-
-    await ctx.reply(
-      '💎 Переход по ссылкам помогает проекту 🙌',
-      { parse_mode: 'Markdown', ...searchAgainKeyboard() },
-    );
+    await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, ...searchAgainKeyboard() });
   } catch (error) {
     console.error('Search error:', error);
     await ctx.reply('❌ Произошла ошибка при поиске. Попробуйте позже.');
