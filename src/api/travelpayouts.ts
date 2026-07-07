@@ -16,27 +16,29 @@ export interface FlightOffer {
   flightNumber: string;
   link: string;
   direct: boolean;
+  gate?: string;
 }
 
-export interface PriceResponse {
+interface FlightRaw {
+  flight_number: string;
+  link: string;
+  origin_airport: string;
+  destination_airport: string;
+  departure_at: string;
+  airline: string;
+  destination: string;
+  origin: string;
+  price: number;
+  gate: string;
+  transfers: number;
+  duration: number;
+  return_transfers: number;
+}
+
+interface PriceResponse {
   success: boolean;
-  data?: {
-    best_prices: Array<{
-      origin_airport: string;
-      destination_airport: string;
-      origin: string;
-      destination: string;
-      depart_date: string;
-      return_date: string;
-      airline: string;
-      flight_number: string;
-      price: number;
-      currency: string;
-      actual: boolean;
-      number_of_changes: number;
-    }>;
-  };
-  error?: string;
+  data: FlightRaw[];
+  currency: string;
 }
 
 export function buildAffiliateLink(params: {
@@ -44,13 +46,30 @@ export function buildAffiliateLink(params: {
   destination: string;
   departDate: string;
   returnDate?: string;
-  marker?: string;
 }): string {
-  const marker = params.marker || config.travelpayouts.marker;
+  const marker = config.travelpayouts.marker;
   const base = 'https://www.aviasales.ru/search';
-  const search = `${params.origin}${params.departDate.replace(/-/g, '')}${params.destination}1`;
-  const utm = `?marker=${marker}`;
-  return `${base}/${search}${utm}`;
+  const d = params.departDate.replace(/-/g, '');
+  const search = `${params.origin}${d}${params.destination}1`;
+  return `${base}/${search}?marker=${marker}`;
+}
+
+function parseFlight(p: FlightRaw, currency: string): FlightOffer {
+  const departDate = p.departure_at.slice(0, 10);
+  return {
+    origin: p.origin,
+    destination: p.destination,
+    originName: p.origin_airport,
+    destinationName: p.destination_airport,
+    departDate,
+    price: p.price,
+    currency,
+    airline: p.airline,
+    flightNumber: p.flight_number,
+    link: buildAffiliateLink({ origin: p.origin, destination: p.destination, departDate }),
+    direct: p.transfers === 0,
+    gate: p.gate,
+  };
 }
 
 export async function searchFlights(params: {
@@ -72,83 +91,15 @@ export async function searchFlights(params: {
         one_way: params.returnDate ? false : true,
         sorting: 'price',
         direct: false,
+        limit: 10,
       },
     });
 
-    if (!response.data.success || !response.data.data?.best_prices) {
+    if (!response.data.success || !response.data.data?.length) {
       return [];
     }
 
-    return response.data.data.best_prices.map((p) => ({
-      origin: p.origin,
-      destination: p.destination,
-      originName: p.origin_airport,
-      destinationName: p.destination_airport,
-      departDate: p.depart_date,
-      returnDate: p.return_date || undefined,
-      price: p.price,
-      currency: p.currency,
-      airline: p.airline,
-      flightNumber: p.flight_number,
-      link: buildAffiliateLink({
-        origin: p.origin,
-        destination: p.destination,
-        departDate: p.depart_date,
-        returnDate: p.return_date || undefined,
-      }),
-      direct: p.number_of_changes === 0,
-    }));
-  } catch (error) {
-    console.error('Travelpayouts API error:', error);
-    return [];
-  }
-}
-
-export async function searchCheapestFlights(params: {
-  origin: string;
-  destination: string;
-  currency?: string;
-}): Promise<FlightOffer[]> {
-  try {
-    const response = await axios.get<PriceResponse>(
-      `${API_BASE}/prices_for_dates`,
-      {
-        params: {
-          token: config.travelpayouts.apiToken,
-          origin: params.origin,
-          destination: params.destination,
-          depart_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
-          currency: params.currency || 'rub',
-          one_way: true,
-          sorting: 'price',
-          limit: 10,
-        },
-      },
-    );
-
-    if (!response.data.success || !response.data.data?.best_prices) {
-      return [];
-    }
-
-    return response.data.data.best_prices.slice(0, 5).map((p) => ({
-      origin: p.origin,
-      destination: p.destination,
-      originName: p.origin_airport,
-      destinationName: p.destination_airport,
-      departDate: p.depart_date,
-      returnDate: p.return_date || undefined,
-      price: p.price,
-      currency: p.currency,
-      airline: p.airline,
-      flightNumber: p.flight_number,
-      link: buildAffiliateLink({
-        origin: p.origin,
-        destination: p.destination,
-        departDate: p.depart_date,
-        returnDate: p.return_date || undefined,
-      }),
-      direct: p.number_of_changes === 0,
-    }));
+    return response.data.data.map((p) => parseFlight(p, response.data.currency));
   } catch (error) {
     console.error('Travelpayouts API error:', error);
     return [];

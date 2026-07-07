@@ -1,5 +1,5 @@
 import { Telegraf, Context } from 'telegraf';
-import { searchFlights, searchCheapestFlights, FlightOffer } from '../api/travelpayouts';
+import { searchFlights } from '../api/travelpayouts';
 import { searchHotels, HotelOffer } from '../api/hotels';
 import {
   formatFlightsList,
