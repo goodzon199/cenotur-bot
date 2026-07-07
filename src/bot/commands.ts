@@ -5,6 +5,8 @@ import {
   formatFlightsList,
   formatHotelsList,
   formatSubscriptionInfo,
+  formatFlightCompareLinks,
+  formatHotelCompareLinks,
 } from '../utils/formatters';
 import {
   getSubscriptions,
@@ -487,9 +489,15 @@ async function performFlightSearch(ctx: Context, session: { origin?: string; des
 
     await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
 
+    const compareMsg = formatFlightCompareLinks({
+      origin: session.origin,
+      destination: session.destination,
+      departDate: session.departDate,
+    });
+    await ctx.reply(compareMsg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
+
     await ctx.reply(
-      '💎 *Партнёрские ссылки:* переход по ссылкам помогает проекту.\n'
-        + 'Вы можете купить билет по самой низкой цене!',
+      '💎 Переход по ссылкам помогает проекту 🙌',
       { parse_mode: 'Markdown', ...searchAgainKeyboard() },
     );
   } catch (error) {
@@ -531,8 +539,16 @@ async function performHotelSearch(
     );
 
     await ctx.reply(msg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
+
+    const compareMsg = formatHotelCompareLinks({
+      city: session.destination,
+      checkIn: session.departDate,
+      checkOut: session.returnDate,
+    });
+    await ctx.reply(compareMsg, { parse_mode: 'Markdown', link_preview_options: { is_disabled: true } });
+
     await ctx.reply(
-      '💎 Переход по ссылкам помогает проекту. Спасибо! 🙌',
+      '💎 Переход по ссылкам помогает проекту 🙌',
       { ...searchAgainKeyboard() },
     );
   } catch (error) {

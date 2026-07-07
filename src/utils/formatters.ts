@@ -1,5 +1,6 @@
 import { FlightOffer } from '../api/travelpayouts';
 import { HotelOffer } from '../api/hotels';
+import { tripComFlightUrl, oneTwoTripUrl, ostrovokUrl, tripComHotelUrl } from '../api/partners';
 
 const AIRLINE_NAMES: Record<string, string> = {
   SU: 'Аэрофлот',
@@ -64,6 +65,28 @@ export function formatHotelsList(hotels: HotelOffer[], title: string): string {
   const header = `🎯 *${title}*\n\n`;
   const items = hotels.map((h, i) => `*${i + 1}.* ${formatHotel(h)}`).join('\n\n---\n\n');
   return header + items;
+}
+
+export function formatFlightCompareLinks(params: {
+  origin: string; destination: string; departDate: string
+}): string {
+  const avia = tripComFlightUrl(params);
+  const ott = oneTwoTripUrl(params);
+  return [
+    '📊 *Сравнить цены:*',
+    `[✈️ Aviasales](${avia}) · [🧳 OneTwoTrip](${ott})`,
+  ].join('\n');
+}
+
+export function formatHotelCompareLinks(params: {
+  city: string; checkIn: string; checkOut: string
+}): string {
+  const trip = tripComHotelUrl(params);
+  const ost = ostrovokUrl(params);
+  return [
+    '📊 *Сравнить цены:*',
+    `[🏨 Trip.com](${trip}) · [🏨 Ostrovok](${ost})`,
+  ].join('\n');
 }
 
 export function formatSubscriptionInfo(sub: {
